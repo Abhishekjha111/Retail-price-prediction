@@ -1,0 +1,233 @@
+Useful Pandas snippets-->
+Tried listing the best/shortest way according to me...
+used some datasets/column names as I encountered
+
+0.File opening-
+Opening the file from the PATH'
+PATH = "D:/Datasets ML/Datasets/Titanic/"
+df = pd.read_csv(f'{PATH}train.csv')
+Missing header-
+df= pd.read_table('http://bit.ly/movieusers', sep='|', 
+	header=None, names= ['userid', 'age', 'gender', 'occup', 'zip'])
+
+Read only selected rows amd columns
+df = pd.read_csv('http://bit.ly/dfreports', usecols=['City','Time'])
+df = pd.read_csv('http://bit.ly/dfreports', usecols=[0,4])
+#Read only 3 rows
+df = pd.read_csv('http://bit.ly/dfreports', nrows=3)
+
+1. Defining x, y
+
+x= df.drop('SalePrice', axis=1); y = df.SalePrise
+
+1a.feature_cols = ['Pclass', 'Parch']
+X = train.loc[:, feature_cols]
+y = train.Survived
+
+1 b.  loc/iloc
+
+df.loc[0,:]
+df.loc[0:2,:] #inclu of both col 0 & 2
+df.loc[:, 'City']
+df.loc[:, ['City', 'State']]
+df.loc[:, 'City':'State']
+
+2. explore pandas series by using 'dots'
+df.head()
+df.dtypes
+df.index
+df.col_name
+type(df.col_name)
+df.describe() #calculates measures of central tendency
+df.info()       # memory footprint and datatypes
+df.column_x.value_counts() #some string column
+df.column_x.value_counts(normalize=True)
+df.column_x.unique() #Get distinct values in a column
+df.column_x.nunique() #Count number of distinct values in a column
+df.column_x.value_counts().plot(kind='bar')
+
+df.duration.describe() #some numaric column
+df.duration.value_counts()
+df.duration.plot(kind='hist')
+
+3. Handling Duplicates-
+
+users.duplicated().sum()
+users.drop_duplicates(keep='first')
+
+4. Binning & Mappoing-
+ bins = [0, 5, 15, 30]
+names = ['Cheap', 'Normal', 'Expensive']
+df['price_point'] = pd.cut(df.price, bins, labels=names)
+
+ mapping = {'0-15 Min':8, '16-30 Min':23, '30+ Min':45}
+df['stop_minutes'] = df.stop_duration.map(mapping)
+
+5. 'For' statament- iterate through series
+for c in df.City:
+    print(c)
+#iterate through dataframe
+for index, row in df.iterrows():
+    print (index, row.City, row.State)
+        
+6. Combine 2 columns
+df.City+df.State
+
+df['Location'] = df.City+df.State
+
+7. Rename/replace/search/drop columns
+
+df.columns.str.replace(' ', '_') #Replace all the 'blank' space with '_'
+df.rename(columns = {'Colors Reported':'Colors_Reported', 'Shape Reported':'Shape_Reported'}, inplace=True)
+
+# add a new column as a function of existing columns
+df[‘new_column_1’] = df.column_x + df.column_y
+df['x'] = column_x * 1000
+df.drop([‘column_x’, ‘column_y’], axis=1, inplace=True) # drop multiple columns
+
+8. handle missing value
+
+df.isnull().sum()
+df.isnull().sum(axis=1)
+df[df.City.isnull()]
+
+8a. drop/treat missing value
+
+(check the shepe before n after dropping)
+df.dropna()
+df.dropna(how='all').shape #drop all the rows having all the missing values
+df.dropna(subset=['City','Shape Reported']).shape #drop fm selcted cols
+df['Shape Reported'].fillna(value='VARIOUS') #fill with selcted value
+df['Shape Reported'].value_counts()
+
+df.content_rating.isnull().sum()
+df.drop('Row A', axis=0)
+df.drop('Column A', axis=1)
+# find missing values in a Series
+df.column_x.isnull()  # True if missing
+df.column_x.notnull() # True if not missing
+# use a boolean Series to filter DataFrame rows
+df[df.column_x.isnull()]  # only show rows where column_x is missing
+df[df.column_x.notnull()] # only show rows where column_x is not missing
+Replace missing values on multiple columns
+df = df.fillna({
+    'col1': 'missing',
+    'col2': '99.999',
+    'col3': '999',
+    'col4': 'missing',
+    'col5': 'missing',
+    'col6': '99'
+})
+9. sorting out/filtering  Dataframe or series
+df.title.sort_values() #sort by series
+df.sort_values('title') #sort by dataframe
+df.sort_values(['content_rating', 'duration'])
+10. Using filters
+
+df[df.duration>=200] #sort df by >200 mnts
+df[df.duration>=200].column_x
+df[df.duration>=200].column_x='crime'
+df.loc[df.duration>=200,'column_x']
+# Apply multiple filter criteria
+
+df[(df.duration>=200) & (df.column_x== 'Drama')]
+df[(df.duration>=200) | (df.column_x== 'Drama')]
+df[df.column_x.isin(['Crime', 'Drama', 'Action'])]
+top_df = df.loc[df.star_rating >=9, :]
+
+df[(df.column_z < 20) & (df.column_y==’string’)] # ampersand for AND condition 
+df[(df.column_z < 20) | (df.column_z > 60)] # pipe for OR condition
+
+11. change data type of a series
+#change column_x to floating
+df.column_x.astype(float)
+df['country'] = df.country.astype('category')
+
+Converting the the values in a DataFrame to an array is simple
+df.values
+If you want to preserve the table presentation
+df.as_matrix
+Convert Series datatype to numeric (will error if column has non-numeric values)
+pd.to_numeric(df['Column Name'])
+Convert Series datatype to numeric, changing non-numeric values to NaN
+
+pd.to_numeric(df['Column Name'], errors='coerce')
+Change data type of DataFrame column
+
+df.column_name = df.column_name.astype(np.int64)
+
+12. Using 'groupby'
+
+df.column_x.mean()
+df.groupby('column_x').column_x.mean()
+df.groupby('column_x').column_x.agg(['count', 'min', 'max', 'mean'])
+df.groupby('column_x').mean().plot(kind='bar')
+df.groupby('column_x')['column_y'].apply(lambda x: np.mean(x))
+df.groupby('column_x')['column_y'].apply(lambda x: x.count()
+
+13. using Values/value_counts
+df.column_x.value_counts()
+df.column_x.value_counts().values
+df.column_x.value_counts()['Africa']
+df.column_x.value_counts().sort_values()
+df.column_x.value_counts().sort_index()
+
+14. Using concact 
+#creat another series called peoplw
+people = pd.Series([300000, 85000], index=['Albania', 'Andorra'], name='population')
+df.column_x * people
+pd.concat([df, people], axis=1).head()
+pd.concat([df_1, df_2], axis=0) #rows vrtically
+pd.concat([df_1, df_2], axis=1) # columns horizontally
+
+15. Using category/code
+df['country'] = df.country.astype('category')
+df.column_x.cat.code.head()
+df.country.cat.categories
+
+
+15.Merging and Concatenating Dataframes
+
+#concatenating two dfs together (just smooshes them together, does not pair them in any meaningful way) - axis=1 concats df2 to right side of df1; axis=0 concats df2 to bottom of df1
+new_df = pd.concat([df1, df2], axis=1)
+
+16.create dummy varibale
+pd.get_dummies(train.col_x)
+
+17. plotting
+plot_df.plot(kind='box')
+plot_df.plot(x='col1')
+df.brand_name.value_counts().nlargest(5).plot(kind='bar')
+sns.boxplot(x='item_condition_id', y='price', data=df[df['price']<100])
+sns.barplot( x = 'price' , y = 'main', data = df)
+
+18. Outliers handling
+df.col_x.describe()
+quants = [0.05, 0.25, 0.5, 0.75, 0.95]
+q = df.quantile(quants)
+r = df.rank()
+
+19. Pandas .str methods
+
+df.category_name.value_counts().nlargest(10)
+df.search_type.str.contains('Frisk').value_counts(normalize=True)
+df = df[df.column.str.contains(pattern)]
+df.stop_date.str.slice(0,4).value_counts()
+
+df = df[df['gene'].str.startswith("snR17")] 
+df = df[df['gene'].str.lower().str.startswith("snr17")]
+
+df.stop_date.str.cat(df.stop_time, sep=' ')
+df.Name = df.Name.str.split(',').str[0].str.strip() #Titanic/ keeping only the surname
+using regex:
+df.Name = df.Name.str.replace('\,.*','').str.strip()
+df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+
+Elements in the split lists can be accessed using get or [] notation:
+df.str.split('_').str.get(1)
+df.str.split('_', expand=True)
+
+https://datacamp-community-prod.s3.amazonaws.com/9f0f2ae1-8bd8-4302-a67b-e17f3059d9e8
+
+
+
